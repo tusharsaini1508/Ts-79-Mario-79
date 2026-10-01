@@ -71,6 +71,12 @@ class Control():
         self.fps = 60
         self.current_time = 0.0
         self.keys = pg.key.get_pressed()
+        self.paused = False
+        self.pause_started_at = 0
+        self.pause_game_time = 0
+        self.paused_duration = 0
+        self.paused_surface = None
+        self.pause_font = pg.font.Font(None, 32)
         self.state_dict = {}
         self.state_name = None
         self.state = None
@@ -83,10 +89,36 @@ class Control():
 
     def update(self):
         # Update current game state
-        self.current_time = pg.time.get_ticks()
+        if self.paused:
+            self.current_time = self.pause_game_time
+            self.draw_pause_overlay()
+            return
+
+        self.current_time = pg.time.get_ticks() - self.paused_duration
         if self.state.done:
             self.flip_state()
         self.state.update(self.screen, self.keys, self.current_time)
+
+    def toggle_pause(self):
+        if self.paused:
+            self.paused_duration += pg.time.get_ticks() - self.pause_started_at
+            self.paused = False
+        else:
+            self.paused = True
+            self.pause_started_at = pg.time.get_ticks()
+            self.pause_game_time = self.current_time
+            self.paused_surface = self.screen.copy()
+
+    def draw_pause_overlay(self):
+        if self.paused_surface is None:
+            return
+
+        self.screen.blit(self.paused_surface, (0, 0))
+        overlay = pg.Surface(self.screen.get_size(), pg.SRCALPHA)
+        overlay.fill((0, 0, 0, 160))
+        self.screen.blit(overlay, (0, 0))
+        label = self.pause_font.render('PAUSED - PRESS P TO RESUME', True, (255, 255, 255))
+        self.screen.blit(label, label.get_rect(center=self.screen.get_rect().center))
 
     def flip_state(self):
         # Switch to the next game state
@@ -103,6 +135,8 @@ class Control():
             ):
                 self.done = True
             elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_p:
+                    self.toggle_pause()
                 self.keys = pg.key.get_pressed()
             elif event.type == pg.KEYUP:
                 self.keys = pg.key.get_pressed()
