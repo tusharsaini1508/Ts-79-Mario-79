@@ -4,7 +4,7 @@ os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 import pygame as pg
 
@@ -99,5 +99,9 @@ class GameplayRegressionTests(TestCase):
 
         player = Player.__new__(Player)
         player.player_name = c.PLAYER_MARIO
-        player.load_data()
-        self.assertIn(c.PLAYER_SPEED, player.player_data)
+        player_data_path = Path(setup.PROJECT_ROOT) / 'source' / 'data' / 'player' / 'mario.json'
+        player_data_file = mock_open(read_data='{}')
+        with patch('builtins.open', player_data_file):
+            player.load_data()
+        player_data_file.assert_called_once_with(str(player_data_path))
+        self.assertEqual(player.player_data, {})
