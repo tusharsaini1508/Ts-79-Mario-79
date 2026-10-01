@@ -33,6 +33,7 @@ import pygame as pg
 from .. import setup, tools
 from .. import constants as c
 from ..components import info, stuff, player, brick, box, enemy, powerup, coin
+from ..high_score import save_high_score
 
 # Define a class for the level state, which inherits from tools.State
 class Level(tools.State):
@@ -629,8 +630,9 @@ class Level(tools.State):
         
     def update_score(self, score, sprite, coin_num=0):
         self.game_info[c.SCORE] += score
-        self.game_info[c.TOP_SCORE] = max(
-            self.game_info[c.TOP_SCORE], self.game_info[c.SCORE])
+        if self.game_info[c.SCORE] > self.game_info[c.TOP_SCORE]:
+            self.game_info[c.TOP_SCORE] = self.game_info[c.SCORE]
+            save_high_score(self.game_info[c.TOP_SCORE])
         self.game_info[c.COIN_TOTAL] += coin_num
         x = sprite.rect.x
         y = sprite.rect.y - 10

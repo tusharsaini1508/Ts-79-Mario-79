@@ -34,6 +34,7 @@ from .. import tools
 from .. import setup
 from .. import constants as c
 from .. components import info
+from ..high_score import load_high_score
 
 # Class representing the main menu of the game
 class Menu(tools.State):
@@ -44,7 +45,7 @@ class Menu(tools.State):
             c.COIN_TOTAL: 0,
             c.SCORE: 0,
             c.LIVES: 3,
-            c.TOP_SCORE: 0,
+            c.TOP_SCORE: load_high_score(),
             c.CURRENT_TIME: 0.0,
             c.LEVEL_NUM: 1,
             c.PLAYER_NAME: c.PLAYER_MARIO
